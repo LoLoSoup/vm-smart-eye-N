@@ -98,7 +98,7 @@ if uploaded_file is not None and api_key:
             # Call Model (Using Gemini 2.0 Flash or 1.5 Flash)
             with st.spinner('VM Smart Eye is performing visual analysis... (This may take a few seconds)'):
                 model = genai.GenerativeModel(
-                    model_name="gemini-1.5-flash-001", # Switch to "gemini-1.5-flash" if 2.0 is unavailable
+                    model_name="gemini-pro", # Switch to "gemini-1.5-flash" if 2.0 is unavailable
                     system_instruction=sys_instruction
                 )
                 
