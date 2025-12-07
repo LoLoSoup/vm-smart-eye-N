@@ -3,37 +3,37 @@ import google.generativeai as genai
 from PIL import Image
 import os
 
-# --- 頁面設定 ---
+# --- Page Configuration ---
 st.set_page_config(
     page_title="VM Smart Eye - AI Retail Agent",
     page_icon="👁️",
     layout="centered"
 )
 
-# --- 標題與簡介 ---
+# --- Title and Introduction ---
 st.title("👁️ VM Smart Eye")
 st.markdown("### AI-Powered Retail Compliance Agent")
-st.caption("上傳店鋪照片，AI 將根據 VM 指引自動生成合規審計報告。")
+st.caption("Upload store photos, and the AI will automatically generate a compliance audit report based on VM guidelines.")
 
-# --- 側邊欄：設定 API Key ---
+# --- Sidebar: API Key Settings ---
 with st.sidebar:
-    st.header("⚙️ 設定")
-    # 優先嘗試從 Streamlit Secrets 讀取 Key，如果沒有則讓用戶輸入
+    st.header("⚙️ Settings")
+    # Try to load API Key from Streamlit Secrets first
     if "GOOGLE_API_KEY" in st.secrets:
         api_key = st.secrets["GOOGLE_API_KEY"]
-        st.success("API Key 已從系統加載 ✅")
+        st.success("API Key loaded from system ✅")
     else:
-        api_key = st.text_input("輸入 Google API Key", type="password")
-        st.info("請輸入您的 Gemini API Key 以開始使用。")
+        api_key = st.text_input("Enter Google API Key", type="password")
+        st.info("Please enter your Gemini API Key to start.")
     
     st.markdown("---")
-    st.markdown("**關於此專案**")
+    st.markdown("**About this Project**")
     st.markdown("Agents Intensive Capstone Project.")
-    st.markdown("作者: Noel Chan")
+    st.markdown("Author: Noel Chan")
 
-# --- 主要功能區 ---
+# --- Main Interface ---
 
-# 1. 輸入 VM 指引 (預設為 PDF 中的 2025 Spring Collection)
+# 1. VM Guidelines Input (Default: 2025 Spring Collection)
 default_guidelines = """【2025 Spring Collection Visual Guidelines】
 
 1. **Color Palette:**
@@ -52,25 +52,25 @@ Use the "Relaxed Logic" pose to showcase natural drape.
 Pantone Floor Decal must be clearly visible and undamaged.
 Rails must be level, and hanger spacing should be 2 fingers wide."""
 
-with st.expander("📝 檢視或修改 VM Guidelines (審計標準)", expanded=False):
-    guideline_text = st.text_area("當前指引", value=default_guidelines, height=200)
+with st.expander("📝 View or Modify VM Guidelines", expanded=False):
+    guideline_text = st.text_area("Current Guidelines", value=default_guidelines, height=200)
 
-# 2. 上傳照片
-uploaded_file = st.file_uploader("📸 上傳店鋪陳列照片", type=["jpg", "jpeg", "png"])
+# 2. Photo Upload
+uploaded_file = st.file_uploader("📸 Upload Store Display Photo", type=["jpg", "jpeg", "png"])
 
-# --- 核心邏輯 ---
+# --- Core Logic ---
 if uploaded_file is not None and api_key:
-    # 顯示預覽圖
+    # Display uploaded image
     image = Image.open(uploaded_file)
-    st.image(image, caption="已上傳的照片", use_column_width=True)
+    st.image(image, caption="Uploaded Photo", use_column_width=True)
 
-    # 按鈕開始分析
-    if st.button("🔍 開始 AI 審計 (Start Audit)", type="primary"):
+    # Analysis Button
+    if st.button("🔍 Start Audit", type="primary"):
         try:
-            # 設定 API
+            # Configure API
             genai.configure(api_key=api_key)
             
-            # 準備 Prompt (來自你的 PDF)
+            # Prepare Prompt (Based on your original logic)
             sys_instruction = """You are "VM Smart Eye," a Senior Visual Merchandising Manager.
             Your Goal: Analyze store photos for compliance with brand guidelines.
             Your Tone: Professional, constructive, and detail-oriented."""
@@ -95,39 +95,39 @@ if uploaded_file is not None and api_key:
             **💡 Expert Insights:** ...
             """
 
-            # 呼叫模型 (使用 Gemini 2.0 Flash 或 1.5 Flash)
-            with st.spinner('VM Smart Eye 正在進行視覺分析... (這可能需要幾秒鐘)'):
+            # Call Model (Using Gemini 2.0 Flash or 1.5 Flash)
+            with st.spinner('VM Smart Eye is performing visual analysis... (This may take a few seconds)'):
                 model = genai.GenerativeModel(
-                    model_name="gemini-2.0-flash", # 如果 2.0 還未對所有人開放，可改為 gemini-1.5-flash
+                    model_name="gemini-2.0-flash", # Switch to "gemini-1.5-flash" if 2.0 is unavailable
                     system_instruction=sys_instruction
                 )
                 
                 response = model.generate_content([prompt, image])
                 report_content = response.text
 
-            # 顯示結果
-            st.success("分析完成！")
+            # Display Result
+            st.success("Analysis Complete!")
             st.markdown("---")
             st.markdown(report_content)
 
-            # 下載按鈕 (取代原本的 save_report_to_disk 工具)
+            # Download Button
             st.download_button(
-                label="📥 下載報告 (Markdown)",
+                label="📥 Download Report (Markdown)",
                 data=report_content,
                 file_name="vm_audit_report.md",
                 mime="text/markdown"
             )
 
-            # 簡單的收集回饋 UI
+            # Feedback UI
             st.markdown("---")
-            st.subheader("💬 評價此結果")
+            st.subheader("💬 Rate this result")
             feedback = st.feedback("stars")
             if feedback is not None:
-                st.write("感謝您的評價！")
+                st.write("Thank you for your feedback!")
 
         except Exception as e:
-            st.error(f"發生錯誤: {e}")
-            st.warning("請檢查您的 API Key 是否正確，或是模型版本是否可用。")
+            st.error(f"An error occurred: {e}")
+            st.warning("Please check your API Key or verify if the model version is currently available.")
 
 elif not api_key:
-    st.warning("👈 請先在左側輸入 Google API Key")
+    st.warning("👈 Please enter your Google API Key in the sidebar first.")
